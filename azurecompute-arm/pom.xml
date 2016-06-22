@@ -80,11 +80,6 @@
       <groupId>org.apache.jclouds</groupId>
       <artifactId>jclouds-compute</artifactId>
       <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.jclouds</groupId>
-      <artifactId>jclouds-compute</artifactId>
-      <version>${project.version}</version>
       <type>test-jar</type>
       <scope>test</scope>
     </dependency>
@@ -105,12 +100,6 @@
       <groupId>org.apache.jclouds.driver</groupId>
       <artifactId>jclouds-sshj</artifactId>
       <version>${project.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.jclouds.driver</groupId>
-      <artifactId>jclouds-slf4j</artifactId>
-      <version>${project.parent.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>

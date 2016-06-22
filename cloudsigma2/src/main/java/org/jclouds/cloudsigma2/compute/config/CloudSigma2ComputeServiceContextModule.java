@@ -27,7 +27,6 @@ import org.jclouds.cloudsigma2.compute.functions.LibraryDriveToImage;
 import org.jclouds.cloudsigma2.compute.functions.NICToAddress;
 import org.jclouds.cloudsigma2.compute.functions.ServerDriveToVolume;
 import org.jclouds.cloudsigma2.compute.functions.ServerInfoToNodeMetadata;
-import org.jclouds.cloudsigma2.compute.functions.TemplateOptionsToStatementWithoutPublicKey;
 import org.jclouds.cloudsigma2.compute.options.CloudSigma2TemplateOptions;
 import org.jclouds.cloudsigma2.compute.strategy.CloudSigma2ComputeServiceAdapter;
 import org.jclouds.cloudsigma2.domain.DriveInfo;
@@ -43,7 +42,6 @@ import org.jclouds.compute.domain.Hardware;
 import org.jclouds.compute.domain.Image;
 import org.jclouds.compute.domain.NodeMetadata;
 import org.jclouds.compute.domain.Volume;
-import org.jclouds.compute.functions.TemplateOptionsToStatement;
 import org.jclouds.compute.options.TemplateOptions;
 import org.jclouds.compute.reference.ComputeServiceConstants.PollPeriod;
 import org.jclouds.compute.reference.ComputeServiceConstants.Timeouts;
@@ -84,7 +82,6 @@ public class CloudSigma2ComputeServiceContextModule extends
       }).to(NICToAddress.class);
 
       bind(TemplateOptions.class).to(CloudSigma2TemplateOptions.class);
-      bind(TemplateOptionsToStatement.class).to(TemplateOptionsToStatementWithoutPublicKey.class);
    }
 
    @VisibleForTesting

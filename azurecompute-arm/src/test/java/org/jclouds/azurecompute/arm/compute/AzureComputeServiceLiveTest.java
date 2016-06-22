@@ -115,7 +115,7 @@ public class AzureComputeServiceLiveTest extends BaseComputeServiceLiveTest {
 
 //   @Override
    protected Template refreshTemplate() {
-      return this.template = addRunScriptToTemplateWithDelay(this.buildTemplate(this.client.templateBuilder()));
+      return this.template = addRunScriptToTemplateWithDelay(this.buildTemplate(this.computeService.templateBuilder()));
    }
 
    protected static Template addRunScriptToTemplateWithDelay(Template template) {
@@ -136,26 +136,26 @@ public class AzureComputeServiceLiveTest extends BaseComputeServiceLiveTest {
       ImmutableMap userMetadata = ImmutableMap.of("test", group);
       ImmutableSet tags = ImmutableSet.of(group);
       Stopwatch watch = Stopwatch.createStarted();
-      this.template = this.buildTemplate(this.client.templateBuilder());
+      this.template = this.buildTemplate(this.computeService.templateBuilder());
       this.template.getOptions().inboundPorts(new int[]{22, 8080}).blockOnPort(22, 300).userMetadata(userMetadata).tags(tags);
-      NodeMetadata node = (NodeMetadata) Iterables.getOnlyElement(this.client.createNodesInGroup(group, 1, this.template));
+      NodeMetadata node = (NodeMetadata) Iterables.getOnlyElement(this.computeService.createNodesInGroup(group, 1, this.template));
       long createSeconds = watch.elapsed(TimeUnit.SECONDS);
       String nodeId = node.getId();
       this.checkUserMetadataContains(node, userMetadata);
       this.checkTagsInNodeEquals(node, tags);
       Logger.getAnonymousLogger().info(String.format("<< available node(%s) os(%s) in %ss", new Object[]{node.getId(), node.getOperatingSystem(), Long.valueOf(createSeconds)}));
       watch.reset().start();
-      this.client.runScriptOnNode(nodeId, new StatementList(Statements.exec("sleep 50"), JettyStatements.install()), nameTask("configure-jetty"));
+      this.computeService.runScriptOnNode(nodeId, new StatementList(Statements.exec("sleep 50"), JettyStatements.install()), nameTask("configure-jetty"));
       long configureSeconds = watch.elapsed(TimeUnit.SECONDS);
       Logger.getAnonymousLogger().info(String.format("<< configured node(%s) with %s and jetty %s in %ss", new Object[]{nodeId, this.exec(nodeId, "java -fullversion"), this.exec(nodeId, JettyStatements.version()), Long.valueOf(configureSeconds)}));
       this.trackAvailabilityOfProcessOnNode(JettyStatements.start(), "start jetty", node);
-      this.client.runScriptOnNode(nodeId, JettyStatements.stop(), org.jclouds.compute.options.TemplateOptions.Builder.runAsRoot(false).wrapInInitScript(false));
+      this.computeService.runScriptOnNode(nodeId, JettyStatements.stop(), org.jclouds.compute.options.TemplateOptions.Builder.runAsRoot(false).wrapInInitScript(false));
       this.trackAvailabilityOfProcessOnNode(JettyStatements.start(), "start jetty", node);
    }
 
    @Override
    protected Map<? extends NodeMetadata, ExecResponse> runScriptWithCreds(String group, OperatingSystem os, LoginCredentials creds) throws RunScriptOnNodesException {
-      return this.client.runScriptOnNodesMatching(NodePredicates.runningInGroup(group), Statements.newStatementList(Statements.exec("sleep 50"), InstallJDK.fromOpenJDK()), org.jclouds.compute.options.TemplateOptions.Builder.overrideLoginCredentials(creds).nameTask("runScriptWithCreds"));
+      return this.computeService.runScriptOnNodesMatching(NodePredicates.runningInGroup(group), Statements.newStatementList(Statements.exec("sleep 50"), InstallJDK.fromOpenJDK()), org.jclouds.compute.options.TemplateOptions.Builder.overrideLoginCredentials(creds).nameTask("runScriptWithCreds"));
    }
 
 
