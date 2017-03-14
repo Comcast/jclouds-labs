@@ -17,6 +17,8 @@
 package org.jclouds.azurecompute.arm.compute.functions;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static org.jclouds.azurecompute.arm.compute.functions.DeploymentToNodeMetadata.AZURE_LOGIN_PASSWORD;
+import static org.jclouds.azurecompute.arm.compute.functions.DeploymentToNodeMetadata.AZURE_LOGIN_USERNAME;
 
 import com.google.common.base.Supplier;
 import com.google.common.collect.FluentIterable;
@@ -29,7 +31,9 @@ import org.jclouds.compute.domain.OsFamily;
 
 import com.google.common.base.Function;
 import com.google.inject.Inject;
+import org.jclouds.domain.Credentials;
 import org.jclouds.domain.Location;
+import org.jclouds.domain.LoginCredentials;
 import org.jclouds.location.predicates.LocationPredicates;
 
 import java.util.Set;
@@ -74,17 +78,18 @@ public class VMImageToImage implements Function<VMImage, Image> {
    @Override
    public Image apply(final VMImage image) {
 
+      Credentials credentials = new Credentials(AZURE_LOGIN_USERNAME, AZURE_LOGIN_PASSWORD);
       final ImageBuilder builder = new ImageBuilder()
               .name(image.offer)
               .description(image.sku)
               .status(Image.Status.AVAILABLE)
               .version(image.sku)
               .id(encodeFieldsToUniqueId(image))
+              .defaultCredentials(LoginCredentials.fromCredentials(credentials))
               .providerId(image.publisher)
               .location(image.globallyAvailable ? null : FluentIterable.from(locations.get())
                       .firstMatch(LocationPredicates.idEquals(image.location))
                       .get());
-
 
       final OperatingSystem.Builder osBuilder = osFamily().apply(image);
       return builder.operatingSystem(osBuilder.build()).build();

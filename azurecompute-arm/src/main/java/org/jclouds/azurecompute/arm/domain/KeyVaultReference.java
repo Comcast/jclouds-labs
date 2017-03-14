@@ -17,49 +17,33 @@
 package org.jclouds.azurecompute.arm.domain;
 
 import com.google.auto.value.AutoValue;
+import org.jclouds.json.SerializedNames;
+
+// Simple helper class to serialize / deserialize keyvault reference.
 
 @AutoValue
-public class VMImage {
+public abstract class KeyVaultReference {
 
-   public VMImage(String publisher, String offer, String sku, String version, String location) {
-      this.globallyAvailable = false;
-      this.publisher = publisher;
-      this.offer = offer;
-      this.sku = sku;
-      this.version = version;
-      this.location = location;
+   @AutoValue
+   public abstract static class Reference {
+
+      public abstract IdReference keyVault();
+
+      public abstract String secretName();
+
+      @SerializedNames({"keyVault", "secretName"})
+      public static Reference create(final IdReference keyVault, final String secretName) {
+         return new AutoValue_KeyVaultReference_Reference(keyVault, secretName);
+      }
    }
 
-   public VMImage() {
+   public abstract Reference reference();
+
+   @SerializedNames({"reference"})
+   public static KeyVaultReference create(final Reference reference) {
+      return new AutoValue_KeyVaultReference(reference);
    }
-
-   /**
-    * The publisher of the image reference.
-    */
-   public String publisher;
-
-   /**
-    * The offer of the image reference.
-    */
-   public String offer;
-
-   /**
-    * The sku of the image reference.
-    */
-   public String sku;
-
-   /**
-    * The version of the image reference.
-    */
-   public String version;
-
-   /**
-    * The location from where Image was fetched
-    */
-   public String location;
-
-   /**
-    * Specifies if this image is globally available
-    */
-   public boolean globallyAvailable;
 }
+
+
+

@@ -16,15 +16,22 @@
  */
 package org.jclouds.azurecompute.arm.compute.config;
 
+
+import javax.annotation.Resource;
 import javax.inject.Named;
 import javax.inject.Singleton;
+
 import com.google.inject.Provides;
 
 import org.jclouds.azurecompute.arm.compute.AzureComputeServiceAdapter;
+import org.jclouds.azurecompute.arm.compute.extensions.AzureComputeImageExtension;
 import org.jclouds.azurecompute.arm.compute.functions.VMImageToImage;
 import org.jclouds.azurecompute.arm.compute.functions.DeploymentToNodeMetadata;
 import org.jclouds.azurecompute.arm.compute.functions.VMHardwareToHardware;
 import org.jclouds.azurecompute.arm.compute.functions.LocationToLocation;
+
+import org.jclouds.azurecompute.arm.compute.strategy.AzurePopulateDefaultLoginCredentialsForImageStrategy;
+import org.jclouds.azurecompute.arm.compute.options.AzureTemplateOptions;
 import org.jclouds.azurecompute.arm.domain.VMDeployment;
 import org.jclouds.azurecompute.arm.domain.VMHardware;
 import org.jclouds.azurecompute.arm.domain.VMImage;
@@ -32,16 +39,30 @@ import org.jclouds.azurecompute.arm.domain.Location;
 import org.jclouds.azurecompute.arm.compute.strategy.CreateResourceGroupThenCreateNodes;
 import org.jclouds.azurecompute.arm.AzureComputeApi;
 import org.jclouds.azurecompute.arm.functions.ParseJobStatus;
-import org.jclouds.azurecompute.arm.compute.AzureComputeService;
 
+import org.jclouds.compute.options.TemplateOptions;
 import org.jclouds.compute.ComputeServiceAdapter;
 import org.jclouds.compute.config.ComputeServiceAdapterContextModule;
 import org.jclouds.compute.domain.Hardware;
 import org.jclouds.compute.domain.NodeMetadata;
+
+import org.jclouds.compute.reference.ComputeServiceConstants;
 import org.jclouds.compute.strategy.CreateNodesInGroupThenAddToSet;
 import org.jclouds.compute.reference.ComputeServiceConstants.Timeouts;
 import org.jclouds.compute.reference.ComputeServiceConstants.PollPeriod;
-import org.jclouds.compute.ComputeService;
+
+import static org.jclouds.azurecompute.arm.config.AzureComputeProperties.OPERATION_TIMEOUT;
+import static org.jclouds.azurecompute.arm.config.AzureComputeProperties.OPERATION_POLL_INITIAL_PERIOD;
+import static org.jclouds.azurecompute.arm.config.AzureComputeProperties.OPERATION_POLL_MAX_PERIOD;
+import static org.jclouds.azurecompute.arm.config.AzureComputeProperties.TCP_RULE_FORMAT;
+import static org.jclouds.azurecompute.arm.config.AzureComputeProperties.TCP_RULE_REGEXP;
+import static org.jclouds.azurecompute.arm.config.AzureComputeProperties.RESOURCE_GROUP_NAME;
+import static org.jclouds.azurecompute.arm.config.AzureComputeProperties.IMAGE_PUBLISHERS;
+import static org.jclouds.azurecompute.arm.config.AzureComputeProperties.DEFAULT_IMAGE_LOGIN;
+import static org.jclouds.azurecompute.arm.config.AzureComputeProperties.DEFAULT_VNET_ADDRESS_SPACE_PREFIX;
+import static org.jclouds.azurecompute.arm.config.AzureComputeProperties.DEFAULT_SUBNET_ADDRESS_PREFIX;
+import static org.jclouds.azurecompute.arm.config.AzureComputeProperties.TIMEOUT_RESOURCE_DELETED;
+
 import static org.jclouds.util.Predicates2.retry;
 import static org.jclouds.compute.config.ComputeServiceProperties.TIMEOUT_NODE_TERMINATED;
 
@@ -53,19 +74,19 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import com.google.common.annotations.VisibleForTesting;
 import java.net.URI;
 
-
-import static org.jclouds.azurecompute.arm.config.AzureComputeProperties.IMAGE_PUBLISHERS;
-import static org.jclouds.azurecompute.arm.config.AzureComputeProperties.RESOURCE_GROUP_NAME;
-import static org.jclouds.azurecompute.arm.config.AzureComputeProperties.OPERATION_TIMEOUT;
-import static org.jclouds.azurecompute.arm.config.AzureComputeProperties.OPERATION_POLL_INITIAL_PERIOD;
-import static org.jclouds.azurecompute.arm.config.AzureComputeProperties.OPERATION_POLL_MAX_PERIOD;
-import static org.jclouds.azurecompute.arm.config.AzureComputeProperties.TCP_RULE_FORMAT;
-import static org.jclouds.azurecompute.arm.config.AzureComputeProperties.TCP_RULE_REGEXP;
-import static org.jclouds.azurecompute.arm.config.AzureComputeProperties.DEFAULT_IMAGE_LOGIN;
-import static org.jclouds.azurecompute.arm.config.AzureComputeProperties.TIMEOUT_RESOURCE_DELETED;
+import org.jclouds.compute.extensions.ImageExtension;
+import org.jclouds.compute.strategy.PopulateDefaultLoginCredentialsForImageStrategy;
+import org.jclouds.azurecompute.arm.compute.AzureComputeService;
+import org.jclouds.compute.ComputeService;
+import org.jclouds.logging.Logger;
 
 public class AzureComputeServiceContextModule
         extends ComputeServiceAdapterContextModule<VMDeployment, VMHardware, VMImage, Location> {
+
+
+   @Resource
+   @Named(ComputeServiceConstants.COMPUTE_LOGGER)
+   protected Logger logger = Logger.NULL;
 
    @Override
    protected void configure() {
@@ -84,7 +105,13 @@ public class AzureComputeServiceContextModule
       install(new LocationsFromComputeServiceAdapterModule<VMDeployment, VMHardware, VMImage, Location>() {
       });
 
+
+      bind(TemplateOptions.class).to(AzureTemplateOptions.class);
+      bind(PopulateDefaultLoginCredentialsForImageStrategy.class).to(AzurePopulateDefaultLoginCredentialsForImageStrategy.class);
+      //bind(TemplateOptionsToStatement.class).to(TemplateOptionsToStatementWithoutPublicKey.class);
       bind(CreateNodesInGroupThenAddToSet.class).to(CreateResourceGroupThenCreateNodes.class);
+      bind(new TypeLiteral<ImageExtension>() {
+      }).to(AzureComputeImageExtension.class);
    }
 
    @Singleton
@@ -122,6 +149,14 @@ public class AzureComputeServiceContextModule
       @Inject
       private String azureDefaultImageLoginProperty;
 
+      @Named(DEFAULT_VNET_ADDRESS_SPACE_PREFIX)
+      @Inject
+      private String azureDefaultVnetAddressPrefixProperty;
+
+      @Named(DEFAULT_SUBNET_ADDRESS_PREFIX)
+      @Inject
+      private String azureDefaultSubnetAddressPrefixProperty;
+
       public Long operationTimeout() {
          return Long.parseLong(operationTimeoutProperty);
       }
@@ -136,6 +171,14 @@ public class AzureComputeServiceContextModule
 
       public String azureDefaultImageLogin() {
          return azureDefaultImageLoginProperty;
+      }
+
+      public String azureDefaultVnetAddressPrefixProperty() {
+         return azureDefaultVnetAddressPrefixProperty;
+      }
+
+      public String azureDefaultSubnetAddressPrefixProperty() {
+         return azureDefaultSubnetAddressPrefixProperty;
       }
 
       public Integer operationPollInitialPeriod() {
@@ -183,7 +226,8 @@ public class AzureComputeServiceContextModule
       @Override
       public boolean apply(URI uri) {
          checkNotNull(uri, "uri cannot be null");
-         return ParseJobStatus.JobStatus.DONE == api.getJobApi().jobStatus(uri);
+
+         return (ParseJobStatus.JobStatus.DONE == api.getJobApi().jobStatus(uri)) || (ParseJobStatus.JobStatus.NO_CONTENT == api.getJobApi().jobStatus(uri));
       }
 
    }

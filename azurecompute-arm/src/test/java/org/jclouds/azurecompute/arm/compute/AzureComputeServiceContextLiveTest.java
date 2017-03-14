@@ -20,6 +20,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.inject.Module;
 import org.jclouds.azurecompute.arm.AzureComputeProviderMetadata;
+import org.jclouds.azurecompute.arm.compute.options.AzureTemplateOptions;
 import org.jclouds.azurecompute.arm.internal.AzureLiveTestUtils;
 import org.jclouds.compute.RunNodesException;
 import org.jclouds.compute.RunScriptOnNodesException;
@@ -38,7 +39,6 @@ import org.testng.annotations.Test;
 
 import java.util.Map;
 import java.util.Properties;
-import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -57,7 +57,6 @@ import static org.testng.Assert.assertTrue;
 public class AzureComputeServiceContextLiveTest extends BaseComputeServiceContextLiveTest {
 
    public String azureGroup;
-   protected static final int RAND = new Random().nextInt(999);
 
    @Override
    protected Module getSshModule() {
@@ -65,7 +64,8 @@ public class AzureComputeServiceContextLiveTest extends BaseComputeServiceContex
    }
 
    @Override protected Properties setupProperties() {
-      azureGroup = "jc" + RAND;
+
+      azureGroup = "at" + System.getProperty("user.name").substring(0, 3);
 
       Properties properties = super.setupProperties();
       long scriptTimeout = TimeUnit.MILLISECONDS.convert(60, TimeUnit.MINUTES);
@@ -87,10 +87,22 @@ public class AzureComputeServiceContextLiveTest extends BaseComputeServiceContex
    public void testDefault() throws RunNodesException {
 
       final String groupName = this.azureGroup;
+      AzureTemplateOptions options = new AzureTemplateOptions();
+
+      // this is needed for latest change in core, give owner permission to authorized_keys file
+      //options.overrideLoginUser("jclouds");
+      //options.authorizePublicKey("key");
+
+      //String keyvault = "/subscriptions/<SUBID>/resourceGroups/<RESOURCEGROUPNAME>/providers/Microsoft.KeyVault/vaults/<VAULTNAME>:<VAULTSECRETNAME>";
+      //options.keyVaultIdAndSecret(keyvault);
+
+      options.inboundPorts(22, 8080);
+
       final TemplateBuilder templateBuilder = view.getComputeService().templateBuilder();
+      templateBuilder.options(options);
       templateBuilder.osFamily(OsFamily.UBUNTU);
-      templateBuilder.osVersionMatches("14.04");
-      templateBuilder.hardwareId("Standard_A0");
+      templateBuilder.osVersionMatches("12.10");
+      templateBuilder.hardwareId("Standard_A5");
       templateBuilder.locationId("westus");
 
       final Template template = templateBuilder.build();

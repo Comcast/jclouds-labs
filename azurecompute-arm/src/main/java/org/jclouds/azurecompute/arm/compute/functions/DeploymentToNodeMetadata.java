@@ -48,6 +48,7 @@ import org.jclouds.compute.domain.Hardware;
 
 public class DeploymentToNodeMetadata implements Function<VMDeployment, NodeMetadata> {
 
+   public static final String JCLOUDS_DEFAULT_USERNAME = "root";
    public static final String AZURE_LOGIN_USERNAME = DeploymentTemplateBuilder.getLoginUserUsername();
    public static final String AZURE_LOGIN_PASSWORD = DeploymentTemplateBuilder.getLoginPassword();
 
@@ -116,6 +117,10 @@ public class DeploymentToNodeMetadata implements Function<VMDeployment, NodeMeta
       builder.name(deployment.name());
       String group =  this.nodeNamingConvention.extractGroup(deployment.name());
       builder.group(group);
+      if (from.tags != null)
+         builder.tags(from.tags);
+      if (from.userMetaData != null)
+         builder.userMetadata(from.userMetaData);
 
       NodeMetadata.Status status = STATUS_TO_NODESTATUS.get(provisioningStateFromString(deployment.properties().provisioningState()));
       if (status == NodeMetadata.Status.RUNNING && from.vm != null && from.vm.statuses() != null) {
@@ -134,9 +139,30 @@ public class DeploymentToNodeMetadata implements Function<VMDeployment, NodeMeta
 
       builder.status(status);
 
+<<<<<<< HEAD
       Credentials credentials = credentialStore.get("node#" + from.deployment.name());
       if (credentials == null) {
          credentials = new Credentials(AZURE_LOGIN_USERNAME, AZURE_LOGIN_PASSWORD);
+=======
+      if (from.vm != null) {
+         builder.hostname(deployment.name() + "pc");
+      }
+
+      Credentials credentials = credentialStore.get("node#" + from.deployment.name());
+      if (credentials != null && credentials.identity.equals(JCLOUDS_DEFAULT_USERNAME)) {
+          credentials = new Credentials(AZURE_LOGIN_USERNAME, credentials.credential);
+      }
+      else if (credentials == null) {
+         String username = AZURE_LOGIN_USERNAME;
+         String password = AZURE_LOGIN_PASSWORD;
+         if (username == null) {
+            username = "jclouds";
+         }
+         if (password == null) {
+            password = "Password1!";
+         }
+
+         credentials = new Credentials(username, password);
       }
       builder.credentials(LoginCredentials.fromCredentials(credentials));
 
@@ -171,13 +197,17 @@ public class DeploymentToNodeMetadata implements Function<VMDeployment, NodeMeta
 
          ImageReference imageReference = from.virtualMachine.properties().storageProfile().imageReference();
 
-         VMImage vmImage = new VMImage();
-         vmImage.publisher = imageReference.publisher();
-         vmImage.offer = imageReference.offer();
-         vmImage.sku = imageReference.sku();
-         vmImage.location = locationName;
-         Image image = vmImageToImage.apply(vmImage);
-         builder.imageId(image.getId());
+
+         if (imageReference != null) {
+            VMImage vmImage = new VMImage();
+            vmImage.publisher = imageReference.publisher();
+            vmImage.offer = imageReference.offer();
+            vmImage.sku = imageReference.sku();
+            vmImage.location = locationName;
+            vmImage.globallyAvailable = true; // TODO: fix this
+            Image image = vmImageToImage.apply(vmImage);
+            builder.imageId(image.getId());
+         }
 
          VMSize myVMSize = null;
          String vmSizeName = from.virtualMachine.properties().hardwareProfile().vmSize();

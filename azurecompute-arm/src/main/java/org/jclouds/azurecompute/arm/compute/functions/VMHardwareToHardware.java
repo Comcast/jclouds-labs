@@ -48,6 +48,7 @@ public class VMHardwareToHardware implements Function<VMHardware, Hardware> {
    public Hardware apply(VMHardware from) {
       final HardwareBuilder builder = new HardwareBuilder()
               .name(from.name)
+              .providerId("azurecompute-arm")
               .id(from.name)
               .processors(ImmutableList.of(new Processor(from.numberOfCores, 2)))
               .ram(from.memoryInMB)

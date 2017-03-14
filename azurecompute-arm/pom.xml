@@ -80,11 +80,6 @@
       <groupId>org.apache.jclouds</groupId>
       <artifactId>jclouds-compute</artifactId>
       <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.jclouds</groupId>
-      <artifactId>jclouds-compute</artifactId>
-      <version>${project.version}</version>
       <type>test-jar</type>
       <scope>test</scope>
     </dependency>
@@ -105,12 +100,6 @@
       <groupId>org.apache.jclouds.driver</groupId>
       <artifactId>jclouds-sshj</artifactId>
       <version>${project.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.jclouds.driver</groupId>
-      <artifactId>jclouds-slf4j</artifactId>
-      <version>${project.parent.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -135,6 +124,12 @@
         </exclusion>
       </exclusions>
     </dependency>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
+      <version>3.4</version>
+    </dependency>
+
   </dependencies>
 
   <profiles>
@@ -156,6 +151,7 @@
                   <goal>test</goal>
                 </goals>
                 <configuration>
+                  <threadCount>1</threadCount>
                   <systemPropertyVariables>
                     <test.azurecompute-arm.endpoint>${test.azurecompute-arm.endpoint}</test.azurecompute-arm.endpoint>
                     <test.azurecompute-arm.api-version>${test.azurecompute-arm.api-version}</test.azurecompute-arm.api-version>

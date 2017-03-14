@@ -17,49 +17,18 @@
 package org.jclouds.azurecompute.arm.domain;
 
 import com.google.auto.value.AutoValue;
+import org.jclouds.javax.annotation.Nullable;
+import org.jclouds.json.SerializedNames;
+
+// Simple helper class to serialize / deserialize id reference.
 
 @AutoValue
-public class VMImage {
+public abstract class TemplateParameterType {
+   @Nullable
+   public abstract String type();
 
-   public VMImage(String publisher, String offer, String sku, String version, String location) {
-      this.globallyAvailable = false;
-      this.publisher = publisher;
-      this.offer = offer;
-      this.sku = sku;
-      this.version = version;
-      this.location = location;
+   @SerializedNames({"type"})
+   public static TemplateParameterType create(final String type) {
+      return new AutoValue_TemplateParameterType(type);
    }
-
-   public VMImage() {
-   }
-
-   /**
-    * The publisher of the image reference.
-    */
-   public String publisher;
-
-   /**
-    * The offer of the image reference.
-    */
-   public String offer;
-
-   /**
-    * The sku of the image reference.
-    */
-   public String sku;
-
-   /**
-    * The version of the image reference.
-    */
-   public String version;
-
-   /**
-    * The location from where Image was fetched
-    */
-   public String location;
-
-   /**
-    * Specifies if this image is globally available
-    */
-   public boolean globallyAvailable;
 }

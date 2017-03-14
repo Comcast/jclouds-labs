@@ -46,8 +46,6 @@ import org.jclouds.compute.domain.Hardware;
 import org.jclouds.compute.domain.Image;
 import org.jclouds.compute.domain.NodeMetadata;
 import org.jclouds.compute.domain.Volume;
-import org.jclouds.compute.functions.NodeAndTemplateOptionsToStatement;
-import org.jclouds.compute.functions.NodeAndTemplateOptionsToStatementWithoutPublicKey;
 import org.jclouds.compute.options.TemplateOptions;
 import org.jclouds.compute.reference.ComputeServiceConstants.PollPeriod;
 import org.jclouds.compute.reference.ComputeServiceConstants.Timeouts;
@@ -86,7 +84,6 @@ public class CloudSigma2ComputeServiceContextModule extends
       }).to(NICToAddress.class);
 
       bind(TemplateOptions.class).to(CloudSigma2TemplateOptions.class);
-      bind(NodeAndTemplateOptionsToStatement.class).to(NodeAndTemplateOptionsToStatementWithoutPublicKey.class);
    }
 
    @VisibleForTesting

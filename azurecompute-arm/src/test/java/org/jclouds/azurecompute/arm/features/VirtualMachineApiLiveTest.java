@@ -195,6 +195,15 @@ public class VirtualMachineApiLiveTest extends BaseAzureComputeApiLiveTest {
    public void testList() {
       List<VirtualMachine> list = api().list();
       VirtualMachine vm = api().get(getName());
+      assertTrue(list.size() > 0);
+      boolean found = false;
+      for (VirtualMachine virtualMachine : list) {
+         if (virtualMachine.name().equals(getName())){
+            found = true;
+            break;
+         }
+      }
+      assertTrue(found);
       assertTrue(list.contains(vm));
    }
 
@@ -227,7 +236,7 @@ public class VirtualMachineApiLiveTest extends BaseAzureComputeApiLiveTest {
       VHD vhd = VHD.create(blob + "vhds/" + getName() + ".vhd");
       VHD vhd2 = VHD.create(blob + "vhds/" + getName() + "data.vhd");
       DataDisk dataDisk = DataDisk.create(getName() + "data", "100", 0, vhd2, "Empty");
-      OSDisk osDisk = OSDisk.create(null, getName(), vhd, "ReadWrite", "FromImage");
+      OSDisk osDisk = OSDisk.create(null, getName(), vhd, "ReadWrite", "FromImage", null);
       StorageProfile storageProfile = StorageProfile.create(imgRef, osDisk, null);
       OSProfile.WindowsConfiguration windowsConfig = OSProfile.WindowsConfiguration.create(false, null, null, true,
               null);
