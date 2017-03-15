@@ -139,11 +139,6 @@ public class DeploymentToNodeMetadata implements Function<VMDeployment, NodeMeta
 
       builder.status(status);
 
-<<<<<<< HEAD
-      Credentials credentials = credentialStore.get("node#" + from.deployment.name());
-      if (credentials == null) {
-         credentials = new Credentials(AZURE_LOGIN_USERNAME, AZURE_LOGIN_PASSWORD);
-=======
       if (from.vm != null) {
          builder.hostname(deployment.name() + "pc");
       }

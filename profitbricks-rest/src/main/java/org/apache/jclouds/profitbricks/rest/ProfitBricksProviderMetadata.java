@@ -68,10 +68,10 @@ public class ProfitBricksProviderMetadata extends BaseProviderMetadata {
       properties.setProperty(PROPERTY_ZONE + ".LAS." + ISO3166_CODES, "US-NV");
       properties.setProperty(PROPERTY_ZONE + ".LASDEV." + ISO3166_CODES, "US-NV");
       
-      long defaultTimeout = 60l * 60l; // 1 hour
+      long defaultTimeout = 60L * 60L; // 1 hour
       properties.put(POLL_TIMEOUT, defaultTimeout);
-      properties.put(POLL_PERIOD, 2l);
-      properties.put(POLL_MAX_PERIOD, 2l * 10l);
+      properties.put(POLL_PERIOD, 2L);
+      properties.put(POLL_MAX_PERIOD, 2L * 10L);
 
       properties.put(PROPERTY_SO_TIMEOUT, 60000 * 5);
       properties.put(PROPERTY_CONNECTION_TIMEOUT, 60000 * 5);

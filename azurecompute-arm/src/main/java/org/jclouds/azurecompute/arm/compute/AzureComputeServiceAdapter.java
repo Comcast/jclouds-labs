@@ -49,8 +49,6 @@ import org.jclouds.azurecompute.arm.domain.VMHardware;
 import org.jclouds.azurecompute.arm.domain.Location;
 import org.jclouds.azurecompute.arm.domain.Offer;
 import org.jclouds.azurecompute.arm.domain.PublicIPAddress;
-import org.jclouds.azurecompute.arm.domain.ResourceProviderMetaData;
-import org.jclouds.azurecompute.arm.domain.VMSize;
 import org.jclouds.azurecompute.arm.domain.SKU;
 import org.jclouds.azurecompute.arm.domain.VMDeployment;
 import org.jclouds.azurecompute.arm.domain.VirtualMachine;
